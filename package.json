@@ -1,0 +1,19 @@
+{
+  "name": "@rsc-quiescent/alpaca-alert-watch-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Read-only watch over both Alpaca paper loops' NDJSON decision journals, the kill switch's tripped-record, and alpaca systemd --user unit failures. Posts one batched [ALPACA-ALERT] message per run into the TTI Discord admin channel via turntide-islands' own Discord REST transport when anything new is found. Runs on its own 15-minute market-hours timer.",
+  "exports": {
+    "./journal-watch": "./src/journal-watch.mjs",
+    "./failed-units-watch": "./src/failed-units-watch.mjs",
+    "./discord-alert": "./src/discord-alert.mjs"
+  },
+  "bin": {
+    "alpaca-watch-and-alert": "./scripts/watch-and-alert.mjs"
+  },
+  "scripts": {
+    "watch": "node scripts/watch-and-alert.mjs",
+    "test": "node --test test/*.test.mjs"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "journalOffsets": {
+    "/home/emsenn/info/lib/emsenn/services/561-group/services/engineering-services-section/services/computer-services-section/services/web-services-section/services/web-platform-services-section/services/web2-platform-services-section/web2-financial-platform-services-section/services/web2-financial-brokerage-platform-services-section/services/alpaca-services-section/services/alpaca-esther-paper-trading-loop/data/journal/decisions.ndjson": 23800,
+    "/home/emsenn/info/lib/emsenn/services/561-group/services/engineering-services-section/services/computer-services-section/services/web-services-section/services/web-platform-services-section/services/web2-platform-services-section/web2-financial-platform-services-section/services/web2-financial-brokerage-platform-services-section/services/alpaca-services-section/services/alpaca-esther-paper-redistributor-loop/data/journal/redistributor-decisions.ndjson": 25268
+  },
+  "alertedFailedUnits": [],
+  "lastAlertedTripTimestamp": "2026-07-23T19:28:06.106Z"
+}
