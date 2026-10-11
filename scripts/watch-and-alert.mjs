@@ -15,7 +15,8 @@ import { fileURLToPath } from "node:url";
 
 import { describeAlertEntry, readNewJournalEntries } from "../src/journal-watch.mjs";
 import { currentlyFailedAlpacaUnits, diffFailedUnits } from "../src/failed-units-watch.mjs";
-import { postAlpacaAlert } from "../src/discord-alert.mjs";
+import { postAdminAlert } from "@red-cup-engineering/turntide-islands-discord-platform/admin-alert";
+import { runJavascriptNodeOperation } from "../../../../../../../../../../../../../../../../computer-code-engineering-services-section/services/javascript-engineering-services-section/services/javascript-node-services-section/src/operation.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SERVICES_ROOT = join(HERE, "..", "..");
@@ -52,7 +53,7 @@ function readLatestTrippedRecord() {
 
 export async function runWatchAndAlert({
   now = () => new Date().toISOString(),
-  post = postAlpacaAlert,
+  post = (lines, options) => postAdminAlert("[ALPACA-ALERT]", lines, options),
   loadStateImpl = loadState,
   saveStateImpl = saveState,
   journals = WATCHED_JOURNALS,
@@ -89,16 +90,7 @@ export async function runWatchAndAlert({
   return { checkedAt: now(), lines, posted };
 }
 
-async function main() {
-  const result = await runWatchAndAlert();
-  console.log(JSON.stringify(result, null, 2));
-}
-
-// Only run as a side effect when executed directly (`node scripts/watch-and-alert.mjs`),
-// never on import -- so test files can import runWatchAndAlert without it firing.
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch((error) => {
-    console.error(`alert-watch-error: ${error?.message ?? error}`);
-    process.exitCode = 1;
-  });
+if (import.meta.main) {
+  const result = await runJavascriptNodeOperation({ name: "watch-and-alert", description: "runWatchAndAlert — the watch-and-alert operation.", operation: runWatchAndAlert }, { arguments: process.argv.slice(2), standardInput: process.stdin, standardOutput: process.stdout });
+  process.exitCode = result.exitCode;
 }
