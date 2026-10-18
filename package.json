@@ -5,8 +5,7 @@
   "description": "Read-only watch over both Alpaca paper loops' NDJSON decision journals, the kill switch's tripped-record, and alpaca systemd --user unit failures. Posts one batched [ALPACA-ALERT] message per run into the TTI Discord admin channel via turntide-islands' own Discord REST transport when anything new is found. Runs on its own 15-minute market-hours timer.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/red-cup-engineering/computer-web-engineering-services-section.git",
-    "directory": "services/web-platform-services-section/services/web2-platform-services-section/services/web2-financial-platform-services-section/services/web2-financial-brokerage-platform-services-section/services/alpaca-services-section/services/alpaca-alert-watch-service"
+    "url": "git+https://github.com/red-cup-engineering/alpaca-alert-watch-service.git"
   },
   "exports": {
     "./journal-watch": "./src/journal-watch.mjs",
