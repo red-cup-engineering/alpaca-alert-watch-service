@@ -4,16 +4,17 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { ALERT_PREFIX, formatAlertMessage, postAlpacaAlert, readDiscordPlatformEnv } from "../src/discord-alert.mjs";
+import { formatAlertMessage, postAdminAlert, readDiscordPlatformEnv } from "@red-cup-engineering/turntide-islands-discord-platform/admin-alert";
+const ALERT_PREFIX = "[ALPACA-ALERT]";
 
 test("formatAlertMessage prefixes with [ALPACA-ALERT] and joins lines", () => {
-  const message = formatAlertMessage(["one", "two"]);
+  const message = formatAlertMessage(ALERT_PREFIX, ["one", "two"]);
   assert.ok(message.startsWith(ALERT_PREFIX));
   assert.match(message, /one\ntwo/u);
 });
 
 test("formatAlertMessage truncates to stay under Discord's message ceiling", () => {
-  const message = formatAlertMessage(["x".repeat(5000)]);
+  const message = formatAlertMessage(ALERT_PREFIX, ["x".repeat(5000)]);
   assert.ok(message.length <= 1900);
   assert.ok(message.endsWith("…"));
 });
@@ -36,14 +37,14 @@ test("readDiscordPlatformEnv on a missing file returns an empty object, not a th
 });
 
 test("postAlpacaAlert refuses without a channel id or bot token", async () => {
-  await assert.rejects(() => postAlpacaAlert(["x"], { env: { DISCORD_BOT_TOKEN: "t" }, channelId: undefined }), /discord-admin-channel-id-missing/u);
-  await assert.rejects(() => postAlpacaAlert(["x"], { env: {}, channelId: "123" }), /discord-bot-token-missing/u);
+  await assert.rejects(() => postAdminAlert(ALERT_PREFIX, ["x"], { env: { DISCORD_BOT_TOKEN: "t" }, channelId: undefined }), /discord-admin-channel-id-missing/u);
+  await assert.rejects(() => postAdminAlert(ALERT_PREFIX, ["x"], { env: {}, channelId: "123" }), /discord-bot-token-missing/u);
 });
 
 test("postAlpacaAlert posts exactly one message through the injected transport", async () => {
   const created = [];
   const fakeTransport = { async createMessage(channelId, content) { created.push({ channelId, content }); return { id: "message-1" }; } };
-  const result = await postAlpacaAlert(["refusal happened"], {
+  const result = await postAdminAlert(ALERT_PREFIX, ["refusal happened"], {
     env: { DISCORD_BOT_TOKEN: "t", DISCORD_ADMIN_CHANNEL_ID: "42" },
     createTransport: async () => fakeTransport,
   });

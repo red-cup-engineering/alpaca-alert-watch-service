@@ -74,3 +74,41 @@ test("describeAlertEntry produces a one-line, non-empty summary", () => {
   assert.match(line, /esther-loop/u);
   assert.match(line, /paper-trading-credentials-missing/u);
 });
+
+test("an incomplete NDJSON frame is retained until its newline arrives", t => {
+  const dir = mkdtempSync(join(tmpdir(), "journal-watch-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, "decisions.ndjson");
+  const complete = JSON.stringify({ guard: "refused", reason: "first" }) + "\n";
+  const later = JSON.stringify({ guard: "error", reason: "later" });
+  writeFileSync(path, complete + later.slice(0, 12));
+  const first = readNewJournalEntries(path);
+  assert.equal(first.entries.length, 1);
+  assert.equal(first.nextOffset, Buffer.byteLength(complete));
+  appendFileSync(path, later.slice(12));
+  assert.deepEqual(readNewJournalEntries(path, first.nextOffset), { entries: [], nextOffset: first.nextOffset });
+  appendFileSync(path, "\n");
+  const second = readNewJournalEntries(path, first.nextOffset);
+  assert.equal(second.entries[0].reason, "later");
+  assert.deepEqual(readNewJournalEntries(path, second.nextOffset).entries, []);
+});
+
+test("a split UTF-8 character and CRLF frame survive a later read", t => {
+  const dir = mkdtempSync(join(tmpdir(), "journal-watch-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, "decisions.ndjson");
+  const bytes = Buffer.from(JSON.stringify({ guard: "refused", reason: "é" }) + "\r\n");
+  const split = bytes.indexOf(Buffer.from("é")) + 1;
+  writeFileSync(path, bytes.subarray(0, split));
+  assert.deepEqual(readNewJournalEntries(path), { entries: [], nextOffset: 0 });
+  appendFileSync(path, bytes.subarray(split));
+  const result = readNewJournalEntries(path);
+  assert.equal(result.entries[0].reason, "é");
+  assert.equal(result.nextOffset, bytes.length);
+});
+
+test("invalid cursor values are rejected before filesystem access", () => {
+  for (const offset of [-1, 0.5, NaN, Infinity, "0"]) {
+    assert.throws(() => readNewJournalEntries("unused", offset), /nonnegative safe integer/);
+  }
+});
