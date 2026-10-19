@@ -19,8 +19,14 @@
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@red-cup-engineering/javascript-node-services-section": "workspace:*",
-    "@causeway-services/koios-news": "workspace:*",
-    "@red-cup-engineering/turntide-islands-discord-platform": "workspace:*"
-  }
+    "@red-cup-engineering/javascript-node-operation-engineering-services-section": "0.2.0",
+    "@red-cup-engineering/turntide-islands-discord-platform": "0.1.0"
+  },
+  "engines": {
+    "node": ">=24.2.0"
+  },
+  "files": [
+    "src",
+    "scripts"
+  ]
 }

@@ -10,7 +10,7 @@
 // as `sinceOffset` next time. A shrunk file (rotated/truncated) is detected by
 // comparing against the current file size and re-read from the start.
 
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 
 function readBytes(path) {
   return readFileSync(path);
@@ -54,18 +54,24 @@ export function describeAlertEntry(journalLabel, entry) {
  * loop that has never run yet has no journal.
  */
 export function readNewJournalEntries(path, sinceOffset = 0) {
-  let size;
+  if (!Number.isSafeInteger(sinceOffset) || sinceOffset < 0) throw new TypeError("journal offset must be a nonnegative safe integer");
+  let bytes;
   try {
-    size = statSync(path).size;
+    bytes = readBytes(path);
   } catch (error) {
     if (error?.code === "ENOENT") return { entries: [], nextOffset: 0 };
     throw error;
   }
 
+  const size = bytes.length;
   const startOffset = sinceOffset > size ? 0 : sinceOffset;
   if (startOffset >= size) return { entries: [], nextOffset: size };
 
-  const slice = readBytes(path).subarray(startOffset).toString("utf8");
+  // Consume only newline-terminated frames from this one byte snapshot.
+  // Retain an incomplete UTF-8/JSON suffix for the next invocation.
+  const completeEnd = bytes.lastIndexOf(0x0a) + 1;
+  if (completeEnd <= startOffset) return { entries: [], nextOffset: startOffset };
+  const slice = bytes.subarray(startOffset, completeEnd).toString("utf8");
   const lines = slice.split("\n").map((line) => line.trim()).filter((line) => line.length > 0);
 
   const entries = [];
@@ -73,11 +79,9 @@ export function readNewJournalEntries(path, sinceOffset = 0) {
     try {
       entries.push(JSON.parse(line));
     } catch {
-      // Partial trailing line from a concurrent writer: leave it for next
-      // time by not advancing past it. Since NDJSON lines are appended
-      // atomically in practice (single appendFileSync per decision) this is
-      // a defensive no-op path, not an expected occurrence.
+      // Preserve the existing tolerance for malformed complete records.
+      // Incomplete trailing frames never reach this parser.
     }
   }
-  return { entries: entries.filter(isAlertWorthyEntry), nextOffset: size };
+  return { entries: entries.filter(isAlertWorthyEntry), nextOffset: completeEnd };
 }

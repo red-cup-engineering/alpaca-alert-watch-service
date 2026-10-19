@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 import { describeAlertEntry, readNewJournalEntries } from "../src/journal-watch.mjs";
 import { currentlyFailedAlpacaUnits, diffFailedUnits } from "../src/failed-units-watch.mjs";
 import { postAdminAlert } from "@red-cup-engineering/turntide-islands-discord-platform/admin-alert";
-import { runJavascriptNodeOperation } from "../../../../../../../../../../../../../../../../computer-code-engineering-services-section/services/javascript-engineering-services-section/services/javascript-node-services-section/src/operation.mjs";
+import { runJavascriptNodeOperation } from "@red-cup-engineering/javascript-node-operation-engineering-services-section/operation";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SERVICES_ROOT = join(HERE, "..", "..");

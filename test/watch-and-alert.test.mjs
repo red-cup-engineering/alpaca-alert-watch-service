@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { appendFileSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
@@ -10,6 +10,25 @@ function memoryState(initial = { journalOffsets: {}, alertedFailedUnits: [], las
   let state = initial;
   return { load: () => state, save: (next) => { state = next; }, get current() { return state; } };
 }
+
+test("an interrupted journal append reaches the original watcher once after completion", t => {
+  const dir = mkdtempSync(join(tmpdir(), "watch-alert-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, "decisions.ndjson");
+  const row = JSON.stringify({ timestamp: "fixture-time", guard: "refused", reason: "fixture reason" });
+  writeFileSync(path, row.slice(0, 15));
+  const store = memoryState();
+  const posts = [];
+  const options = { journals: [{ label: "fixture", path }], readTripped: () => null, listFailedUnits: () => [], loadStateImpl: store.load, saveStateImpl: store.save, post: async lines => { posts.push(lines); return { messageId: "fixture" }; } };
+  return (async () => {
+    assert.deepEqual((await runWatchAndAlert(options)).lines, []);
+    assert.equal(store.current.journalOffsets[path], 0);
+    appendFileSync(path, row.slice(15) + "\n");
+    assert.equal((await runWatchAndAlert(options)).lines.length, 1);
+    assert.deepEqual((await runWatchAndAlert(options)).lines, []);
+    assert.equal(posts.length, 1);
+  })();
+});
 
 test("a clean run with nothing new posts nothing and reports no lines", async () => {
   const dir = mkdtempSync(join(tmpdir(), "watch-alert-"));
