@@ -16,7 +16,7 @@ credentials and deployment require their separately authorized operating context
 
 The command selects the published JavaScript operation runtime 0.2.0 and Node
 >=24.2. The default alert function comes from
-`turntide-islands-discord-platform/admin-alert` 0.1.0. The obsolete unexported local
+`turntide-islands-services-section/admin-alert` 0.1.0. The obsolete unexported local
 Discord implementation is removed; its original fixture cases now exercise that
 actual supplier. The unused Koios dependency is removed. Published files contain
 only source and scripts, never instance cursor/lock files under `data/state`.
