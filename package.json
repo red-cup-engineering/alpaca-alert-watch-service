@@ -19,7 +19,7 @@
     "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "@red-cup-engineering/javascript-node-operation-engineering-services-section": "0.2.0",
+    "@red-cup-engineering/node-js-function-engineering-services-section": "^0.5.1",
     "@red-cup-engineering/turntide-islands-discord-platform": "0.1.0"
   },
   "engines": {
